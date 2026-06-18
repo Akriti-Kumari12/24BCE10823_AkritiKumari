@@ -1,0 +1,83 @@
+sh.addShard("shardASet/localhost:27200")
+{
+  shardAdded: 'shardASet',
+  ok: 1,
+  '$clusterTime': {
+    clusterTime: Timestamp({ t: 1781100356, i: 2 }),
+    signature: {
+      hash: Binary.createFromBase64('AAAAAAAAAAAAAAAAAAAAAAAAAAA=', 0),
+      keyId: Long('0')
+    }
+  },
+  operationTime: Timestamp({ t: 1781100356, i: 2 })
+}
+sh.addShard("shardBSet/localhost:27300")
+{
+  shardAdded: 'shardBSet',
+  ok: 1,
+  '$clusterTime': {
+    clusterTime: Timestamp({ t: 1781100377, i: 37 }),
+    signature: {
+      hash: Binary.createFromBase64('AAAAAAAAAAAAAAAAAAAAAAAAAAA=', 0),
+      keyId: Long('0')
+    }
+  },
+  operationTime: Timestamp({ t: 1781100377, i: 37 })
+}
+use deep_space
+sh.enableSharding("deep_space")
+switched to db deep_space
+db.createCollection("quantum_data")
+{ ok: 1 }
+sh.shardCollection("deep_space.quantum_data", { _id: "hashed" })
+{
+  collectionsharded: 'deep_space.quantum_data',
+  ok: 1,
+  '$clusterTime': {
+    clusterTime: Timestamp({ t: 1781100511, i: 51 }),
+    signature: {
+      hash: Binary.createFromBase64('AAAAAAAAAAAAAAAAAAAAAAAAAAA=', 0),
+      keyId: Long('0')
+    }
+  },
+  operationTime: Timestamp({ t: 1781100511, i: 51 })
+}
+for (let i = 1; i <= 100; i++) { db.quantum_data.insertOne({ passenger_id: i, status: "Active" }); }
+{
+  acknowledged: true,
+  insertedId: ObjectId('6a296feb464ff7c154caaced')
+}
+db.quantum_data.getShardDistribution()
+Shard shardBSet at shardBSet/localhost:27300
+{
+  data: '2KiB',
+  docs: 52,
+  chunks: 1,
+  'estimated data per chunk': '2KiB',
+  'estimated docs per chunk': 52
+}
+Shard shardASet at shardASet/localhost:27200
+{
+  data: '2KiB',
+  docs: 48,
+  chunks: 1,
+  'estimated data per chunk': '2KiB',
+  'estimated docs per chunk': 48
+}
+Totals
+{
+  data: '5KiB',
+  docs: 100,
+  chunks: 2,
+  'Shard shardBSet': [
+    '52 % data',
+    '52 % docs in cluster',
+    '59B avg obj size on shard'
+  ],
+  'Shard shardASet': [
+    '48 % data',
+    '48 % docs in cluster',
+    '59B avg obj size on shard'
+  ]
+}
+[direct: mongos] deep_space
