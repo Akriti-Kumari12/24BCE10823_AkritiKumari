@@ -215,4 +215,4 @@ Built with ❤️ using the MERN Stack
 
 ## 📄 License
 
-MIT License © 2024 Akriti
+MIT License © 2026 Akriti
