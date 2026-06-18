@@ -1,0 +1,556 @@
+{
+  "info": {
+    "name": "EchoBoard API",
+    "description": "Complete API collection for EchoBoard - MERN Blog Platform\nDeveloped by Akriti\n\nSetup:\n1. Import this collection\n2. Import the Environment file (EchoBoard.postman_environment.json)\n3. Run 'Login' or 'Register' — token saves automatically\n4. All protected routes use {{token}} automatically",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "base_url", "value": "http://localhost:5000/api" }
+  ],
+  "item": [
+    {
+      "name": "🔐 Auth",
+      "item": [
+        {
+          "name": "Register",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.token) {",
+                  "  pm.environment.set('token', res.token);",
+                  "  pm.environment.set('user_id', res.user.id);",
+                  "  pm.environment.set('username', res.user.username);",
+                  "  console.log('✅ Token saved:', res.token);",
+                  "}",
+                  "pm.test('Status 201', () => pm.response.to.have.status(201));",
+                  "pm.test('Has token', () => pm.expect(res.token).to.be.a('string'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"John Doe\",\n  \"username\": \"johndoe\",\n  \"email\": \"john@example.com\",\n  \"password\": \"john1234\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/auth/register", "host": ["{{base_url}}"], "path": ["auth", "register"] },
+            "description": "Register a new user account.\n\n**Validations:**\n- name: required\n- username: min 3 chars, unique\n- email: valid email, unique\n- password: min 6 chars\n\n**Returns:** JWT token + user object"
+          }
+        },
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.token) {",
+                  "  pm.environment.set('token', res.token);",
+                  "  pm.environment.set('user_id', res.user.id);",
+                  "  pm.environment.set('username', res.user.username);",
+                  "  console.log('✅ Token saved:', res.token);",
+                  "}",
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Has token', () => pm.expect(res.token).to.be.a('string'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"john@example.com\",\n  \"password\": \"john1234\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/auth/login", "host": ["{{base_url}}"], "path": ["auth", "login"] },
+            "description": "Login with existing credentials.\n\n**Returns:** JWT token + user object\n\n**Auto-saves token to environment.**"
+          }
+        },
+        {
+          "name": "Login as Admin",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.token) {",
+                  "  pm.environment.set('token', res.token);",
+                  "  pm.environment.set('user_id', res.user.id);",
+                  "  pm.environment.set('username', res.user.username);",
+                  "  console.log('✅ Admin token saved');",
+                  "}",
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Role is admin', () => pm.expect(pm.response.json().user.role).to.equal('admin'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@echoboard.com\",\n  \"password\": \"admin123\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/auth/login", "host": ["{{base_url}}"], "path": ["auth", "login"] },
+            "description": "Login as admin. Use this before testing Admin routes."
+          }
+        },
+        {
+          "name": "Get Current User",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{base_url}}/auth/me", "host": ["{{base_url}}"], "path": ["auth", "me"] },
+            "description": "Get the currently logged-in user's profile.\n\n**Requires:** Bearer token"
+          }
+        },
+        {
+          "name": "Update Profile",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "name", "value": "John Updated", "type": "text" },
+                { "key": "username", "value": "johnupdated", "type": "text" },
+                { "key": "bio", "value": "I am a passionate writer.", "type": "text" },
+                { "key": "avatar", "type": "file", "src": "", "description": "Optional: upload profile image" }
+              ]
+            },
+            "url": { "raw": "{{base_url}}/auth/profile", "host": ["{{base_url}}"], "path": ["auth", "profile"] },
+            "description": "Update user profile. Supports avatar image upload.\n\n**Requires:** Bearer token\n**Body:** form-data (supports file upload for avatar)"
+          }
+        }
+      ]
+    },
+    {
+      "name": "📝 Posts",
+      "item": [
+        {
+          "name": "Get All Public Posts",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.posts && res.posts.length > 0) {",
+                  "  pm.environment.set('post_id', res.posts[0]._id);",
+                  "  console.log('✅ post_id saved:', res.posts[0]._id);",
+                  "}",
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Has posts array', () => pm.expect(res.posts).to.be.an('array'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/posts?page=1&limit=9",
+              "host": ["{{base_url}}"],
+              "path": ["posts"],
+              "query": [
+                { "key": "page", "value": "1", "description": "Page number" },
+                { "key": "limit", "value": "9", "description": "Posts per page" },
+                { "key": "search", "value": "", "description": "Search keyword", "disabled": true },
+                { "key": "category", "value": "Technology", "description": "Filter by category", "disabled": true },
+                { "key": "tag", "value": "react", "description": "Filter by tag", "disabled": true }
+              ]
+            },
+            "description": "Get all public posts.\n\n**Query Params (all optional):**\n- page (default: 1)\n- limit (default: 9)\n- search (full-text)\n- category\n- tag\n\n**No auth required.**"
+          }
+        },
+        {
+          "name": "Get All Public Posts (with Search)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/posts?search=react&page=1",
+              "host": ["{{base_url}}"],
+              "path": ["posts"],
+              "query": [
+                { "key": "search", "value": "react" },
+                { "key": "page", "value": "1" }
+              ]
+            },
+            "description": "Search posts by keyword."
+          }
+        },
+        {
+          "name": "Get All Public Posts (by Category)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/posts?category=Technology",
+              "host": ["{{base_url}}"],
+              "path": ["posts"],
+              "query": [{ "key": "category", "value": "Technology" }]
+            },
+            "description": "Filter posts by category."
+          }
+        },
+        {
+          "name": "Get Single Post",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}", "description": "Optional for private posts" }],
+            "url": { "raw": "{{base_url}}/posts/{{post_id}}", "host": ["{{base_url}}"], "path": ["posts", "{{post_id}}"] },
+            "description": "Get a single post by ID. Also increments view count.\n\n**Note:** Private posts require Bearer token."
+          }
+        },
+        {
+          "name": "Get My Posts",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{base_url}}/posts/my", "host": ["{{base_url}}"], "path": ["posts", "my"] },
+            "description": "Get all posts (public + private) for the logged-in user.\n\n**Requires:** Bearer token"
+          }
+        },
+        {
+          "name": "Create Post",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res._id) {",
+                  "  pm.environment.set('post_id', res._id);",
+                  "  console.log('✅ post_id saved:', res._id);",
+                  "}",
+                  "pm.test('Status 201', () => pm.response.to.have.status(201));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "title", "value": "My First Blog Post", "type": "text" },
+                { "key": "content", "value": "<h2>Introduction</h2><p>This is my first post on EchoBoard! I am excited to share my thoughts.</p><p>Writing is a great way to express yourself and connect with others.</p>", "type": "text" },
+                { "key": "excerpt", "value": "This is my first post on EchoBoard!", "type": "text" },
+                { "key": "category", "value": "General", "type": "text" },
+                { "key": "visibility", "value": "public", "type": "text" },
+                { "key": "tags", "value": "[\"writing\", \"firstpost\", \"blog\"]", "type": "text" },
+                { "key": "coverImage", "type": "file", "src": "", "description": "Optional cover image" }
+              ]
+            },
+            "url": { "raw": "{{base_url}}/posts", "host": ["{{base_url}}"], "path": ["posts"] },
+            "description": "Create a new blog post.\n\n**Requires:** Bearer token\n**Body:** form-data\n\n**visibility options:** public | private\n**category options:** General, Technology, Lifestyle, Travel, Food, Health, Business, Art, Science\n**tags:** JSON array string e.g. [\"tag1\",\"tag2\"]"
+          }
+        },
+        {
+          "name": "Create Private Post",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "title", "value": "My Private Diary Entry", "type": "text" },
+                { "key": "content", "value": "<p>This is a private post only visible to me.</p>", "type": "text" },
+                { "key": "category", "value": "Lifestyle", "type": "text" },
+                { "key": "visibility", "value": "private", "type": "text" },
+                { "key": "tags", "value": "[\"diary\", \"private\"]", "type": "text" }
+              ]
+            },
+            "url": { "raw": "{{base_url}}/posts", "host": ["{{base_url}}"], "path": ["posts"] },
+            "description": "Create a private post (only visible to the author)."
+          }
+        },
+        {
+          "name": "Update Post",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "title", "value": "My Updated Blog Post Title", "type": "text" },
+                { "key": "content", "value": "<h2>Updated Content</h2><p>This post has been updated with new information.</p>", "type": "text" },
+                { "key": "excerpt", "value": "Updated excerpt here.", "type": "text" },
+                { "key": "category", "value": "Technology", "type": "text" },
+                { "key": "visibility", "value": "public", "type": "text" },
+                { "key": "tags", "value": "[\"updated\", \"tech\"]", "type": "text" }
+              ]
+            },
+            "url": { "raw": "{{base_url}}/posts/{{post_id}}", "host": ["{{base_url}}"], "path": ["posts", "{{post_id}}"] },
+            "description": "Update an existing post.\n\n**Requires:** Bearer token (must be post owner or admin)"
+          }
+        },
+        {
+          "name": "Delete Post",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{base_url}}/posts/{{post_id}}", "host": ["{{base_url}}"], "path": ["posts", "{{post_id}}"] },
+            "description": "Soft-delete a post (sets isDeleted: true).\n\n**Requires:** Bearer token (must be post owner or admin)"
+          }
+        },
+        {
+          "name": "Like / Unlike Post",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{base_url}}/posts/{{post_id}}/like", "host": ["{{base_url}}"], "path": ["posts", "{{post_id}}", "like"] },
+            "description": "Toggle like on a post. Call again to unlike.\n\n**Requires:** Bearer token\n\n**Returns:** { likes: number, liked: boolean }"
+          }
+        }
+      ]
+    },
+    {
+      "name": "💬 Comments",
+      "item": [
+        {
+          "name": "Get Comments for a Post",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.length > 0) {",
+                  "  pm.environment.set('comment_id', res[0]._id);",
+                  "  console.log('✅ comment_id saved:', res[0]._id);",
+                  "}",
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Returns array', () => pm.expect(res).to.be.an('array'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{base_url}}/comments/{{post_id}}", "host": ["{{base_url}}"], "path": ["comments", "{{post_id}}"] },
+            "description": "Get all comments (with replies) for a post.\n\n**No auth required.**\n**Returns:** Array of comments, each with a replies array."
+          }
+        },
+        {
+          "name": "Add Comment",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res._id) {",
+                  "  pm.environment.set('comment_id', res._id);",
+                  "  console.log('✅ comment_id saved:', res._id);",
+                  "}",
+                  "pm.test('Status 201', () => pm.response.to.have.status(201));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"content\": \"Great post! Really enjoyed reading this.\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/comments/{{post_id}}", "host": ["{{base_url}}"], "path": ["comments", "{{post_id}}"] },
+            "description": "Add a top-level comment to a post.\n\n**Requires:** Bearer token"
+          }
+        },
+        {
+          "name": "Reply to Comment",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"content\": \"Thanks for your comment! I appreciate the feedback.\",\n  \"parentComment\": \"{{comment_id}}\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/comments/{{post_id}}", "host": ["{{base_url}}"], "path": ["comments", "{{post_id}}"] },
+            "description": "Reply to an existing comment by passing parentComment ID.\n\n**Requires:** Bearer token"
+          }
+        },
+        {
+          "name": "Delete Comment",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{base_url}}/comments/{{comment_id}}", "host": ["{{base_url}}"], "path": ["comments", "{{comment_id}}"] },
+            "description": "Delete a comment.\n\n**Requires:** Bearer token (must be comment owner or admin)"
+          }
+        }
+      ]
+    },
+    {
+      "name": "👤 Users",
+      "item": [
+        {
+          "name": "Get User Profile",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{base_url}}/users/{{username}}", "host": ["{{base_url}}"], "path": ["users", "{{username}}"] },
+            "description": "Get public profile of a user by username.\n\n**Returns:** user object + their public posts\n**No auth required.**"
+          }
+        },
+        {
+          "name": "Follow / Unfollow User",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{base_url}}/users/{{user_id}}/follow", "host": ["{{base_url}}"], "path": ["users", "{{user_id}}", "follow"] },
+            "description": "Toggle follow/unfollow a user. Call again to unfollow.\n\n**Requires:** Bearer token\n**Returns:** { following: boolean }"
+          }
+        }
+      ]
+    },
+    {
+      "name": "🛡️ Admin",
+      "item": [
+        {
+          "name": "Get Dashboard Stats",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{base_url}}/admin/stats", "host": ["{{base_url}}"], "path": ["admin", "stats"] },
+            "description": "Get platform stats: total users, posts, comments + recent items.\n\n**Requires:** Admin Bearer token"
+          }
+        },
+        {
+          "name": "Get All Users",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "const nonAdmin = res.find(u => u.role !== 'admin');",
+                  "if (nonAdmin) {",
+                  "  pm.environment.set('target_user_id', nonAdmin._id);",
+                  "  console.log('✅ target_user_id saved:', nonAdmin._id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{base_url}}/admin/users", "host": ["{{base_url}}"], "path": ["admin", "users"] },
+            "description": "Get all registered users.\n\n**Requires:** Admin Bearer token\n**Auto-saves a non-admin user ID as target_user_id.**"
+          }
+        },
+        {
+          "name": "Restrict / Unrestrict User",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{base_url}}/admin/users/{{target_user_id}}/restrict", "host": ["{{base_url}}"], "path": ["admin", "users", "{{target_user_id}}", "restrict"] },
+            "description": "Toggle restrict/unrestrict a user. Restricted users cannot login.\n\n**Requires:** Admin Bearer token"
+          }
+        },
+        {
+          "name": "Promote User to Admin",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{base_url}}/admin/users/{{target_user_id}}/promote", "host": ["{{base_url}}"], "path": ["admin", "users", "{{target_user_id}}", "promote"] },
+            "description": "Promote a user to admin role.\n\n**Requires:** Admin Bearer token"
+          }
+        },
+        {
+          "name": "Delete User",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{base_url}}/admin/users/{{target_user_id}}", "host": ["{{base_url}}"], "path": ["admin", "users", "{{target_user_id}}"] },
+            "description": "Delete a user and soft-delete all their posts.\n\n**Requires:** Admin Bearer token\n**Cannot delete yourself.**"
+          }
+        },
+        {
+          "name": "Get All Posts (Admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.length > 0) {",
+                  "  pm.environment.set('post_id', res[0]._id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{base_url}}/admin/posts", "host": ["{{base_url}}"], "path": ["admin", "posts"] },
+            "description": "Get all posts on the platform.\n\n**Requires:** Admin Bearer token"
+          }
+        },
+        {
+          "name": "Delete Post (Admin)",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{base_url}}/admin/posts/{{post_id}}", "host": ["{{base_url}}"], "path": ["admin", "posts", "{{post_id}}"] },
+            "description": "Admin delete any post.\n\n**Requires:** Admin Bearer token"
+          }
+        },
+        {
+          "name": "Get All Comments (Admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.length > 0) {",
+                  "  pm.environment.set('comment_id', res[0]._id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{base_url}}/admin/comments", "host": ["{{base_url}}"], "path": ["admin", "comments"] },
+            "description": "Get all comments on the platform.\n\n**Requires:** Admin Bearer token"
+          }
+        },
+        {
+          "name": "Delete Comment (Admin)",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{base_url}}/admin/comments/{{comment_id}}", "host": ["{{base_url}}"], "path": ["admin", "comments", "{{comment_id}}"] },
+            "description": "Admin delete any comment.\n\n**Requires:** Admin Bearer token"
+          }
+        }
+      ]
+    }
+  ]
+}
