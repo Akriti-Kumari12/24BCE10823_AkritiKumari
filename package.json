@@ -1,0 +1,11 @@
+{
+  "name": "echoboard",
+  "version": "1.0.0",
+  "description": "EchoBoard — Full-Stack Blog Platform (MERN)",
+  "scripts": {
+    "server": "cd server && npm run dev",
+    "client": "cd client && npm start",
+    "seed": "cd server && node seed.js",
+    "install:all": "cd server && npm install && cd ../client && npm install --legacy-peer-deps"
+  }
+}
